@@ -1,6 +1,6 @@
 ← Back to [[EGH445 - Modern Control]]
 
-This lecture provides an overview of the EGH445 unit, the motivation for studying modern control over classical methods, and the fundamental mathematics of state-space modeling.
+This lecture provides an overview of the EGH445 unit, the motivation for studying modern control over classical methods, and the fundamental mathematics of state-space modelling.
 ## Motivation & Concepts:
 * [[Modern vs Classical Control]]: Comparing SISO/LTI systems with MIMO/Nonlinear systems.
 * **Running Examples**:
