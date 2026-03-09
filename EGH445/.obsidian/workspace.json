@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Lecture 1/Examples/MIMO Transfer Function Example.md",
+                "file": "Lecture 3/Examples/Example - Simple Pendulum Equilibrium.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "MIMO Transfer Function Example"
+              "title": "Example - Simple Pendulum Equilibrium"
             }
           }
         ],
@@ -198,11 +198,28 @@
       "bases:Create new base": false
     }
   },
-  "active": "5d85878b287cb06e",
+  "active": "8b34d423261a7da3",
   "lastOpenFiles": [
-    "Lecture 1/Introduction to Modern Control.md",
-    "Lecture 1/Examples/SISO Transfer Function Example.md",
+    "Lecture 3/Examples",
+    "Lecture 3/Linearisation Methodology.md",
+    "Lecture 3/Examples/Example - Simple Pendulum Equilibrium.md",
+    "Lecture 3/Nonlinear Systems and Linearisation.md",
+    "Lecture 3/Examples/Example - Single Link Robotic Arm.md",
+    "Lecture 3/Stability Analysis of Linearised Systems.md",
+    "Lecture 3/Eigenvalues and System Response Types.md",
+    "Lecture 3/Types of Equilibrium Points.md",
+    "Images/Phase_Portraits.png",
+    "Lecture 3/Linear vs Nonlinear Systems.md",
+    "Lecture 3/Jacobian Matrices in Linearisation.md",
+    "Lecture 3/Equilibrium Points in Dynamical Systems.md",
+    "Images/Isolated_vs_NonIsolated_EP.png",
+    "Workshops/Week 2/Week 2 Workshop.md",
+    "Workshops/Week 1/Hodgkin-Huxley Activation Gates.md",
+    "EGH445 - Modern Control.md",
     "Lecture 1/Examples/MIMO Transfer Function Example.md",
+    "Lecture 3",
+    "Lecture 1/Examples/SISO Transfer Function Example.md",
+    "Lecture 1/Introduction to Modern Control.md",
     "Lecture 1/Examples",
     "Lecture 1/State-Space to Transfer Function Conversion.md",
     "Lecture 1/Model Conversions.md",
@@ -212,20 +229,7 @@
     "Workshops/Week 1/6DOF Aircraft Linearised Dynamics.md",
     "Workshops/Week 1/6DOF Aircraft Model Variables.md",
     "Workshops/Week 1/6DOF Aircraft Nonlinear Equations.md",
-    "Workshops/Week 1/Hodgkin-Huxley Activation Gates.md",
     "Workshops/Week 1/Hodgkin-Huxley Neuron Model.md",
-    "Workshops/Week 1/Week 1 Workshop.md",
-    "Lecture 1/Block Diagram Algebra.md",
-    "Lecture 1/Mass-Spring-Damper System.md",
-    "Lecture 1/State Transformations.md",
-    "Lecture 2/System Response Solutions.md",
-    "Lecture 2/Response and Stability.md",
-    "Lecture 2/Numerical Integration Methods.md",
-    "Lecture 2/Lyapunov Stability Criteria.md",
-    "Lecture 2/LTI System Stability.md",
-    "EGH445 - Modern Control.md",
-    "Workshops/Week 2/Lyapunov Stability.md",
-    "Workshops/Week 2/Week 2 Workshop.md",
     "Workshops/Week 2",
     "Workshops/Week 1",
     "Workshops",

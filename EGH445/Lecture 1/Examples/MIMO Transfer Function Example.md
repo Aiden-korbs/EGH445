@@ -5,6 +5,10 @@
 > To find $H_1(s) = \frac{y_1(s)}{u_1(s)}$, you look at row 1, column 1 of $G(s)$.
 > 
 > To find $H_2(s) = \frac{y_2(s)}{u_1(s)}$, you look at row 2, column 1 of $G(s)$.
+> 
+> To find $H_3(s) = \frac{y_1(s)}{u_2(s)}$, you look at row 1, column 2 of $G(s)$.
+> 
+> To find $H_4(s) = \frac{y_3(s)}{u_2(s)}$, you look at row 3, column 2 of $G(s)$.
 
 ### 1. The Problem Statement
 
