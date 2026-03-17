@@ -2,6 +2,7 @@
 [[Introduction to Modern Control|Lecture 01 - System Modelling and Block Diagrams]] 
 [[Response and Stability |Lecture 02 - Response & Stability Overview]]
 [[Nonlinear Systems and Linearisation |Lecture 03 - Nonlinear Systems and Linearisation]]
+[[Discrete State Space Models - Overview|Lecture 04 - Discrete State Space Models]]
 
 
 ## Workshops
