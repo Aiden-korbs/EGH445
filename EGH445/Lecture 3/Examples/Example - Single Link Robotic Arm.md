@@ -3,7 +3,8 @@
 Linearise a single link robotic arm about its equilibrium points and analyse system stability.
 
 ## Given
-*$\dot{x}_1 = x_2$*$\dot{x}_2 = -\frac{g}{l}\sin(x_1) - \frac{b}{ml^2}x_2 + T$*Assumptions: Mass $m=1$, input torque $T(t) = u(t)$, arm is rigid.
+*$\dot{x}_1 = x_2$*$\dot{x}_2 = -\frac{g}{l}\sin(x_1) - \frac{b}{ml^2}x_2 + T$
+* Assumptions: Mass $m=1$, input torque $T(t) = u(t)$, arm is rigid.
 
 ## Steps
 **1. Find Equilibrium Points**:
