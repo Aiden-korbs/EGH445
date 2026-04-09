@@ -1,5 +1,3 @@
-# Discrete Transfer Function from State Space
-
 ## Discrete State-Space Model
 A discrete-time state-space model has the form:
 $$

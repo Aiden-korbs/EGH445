@@ -1,5 +1,3 @@
-# Discrete Transfer Function from Continuous Models
-
 ## Key Idea
 - To derive a discrete transfer function from a continuous plant, the **Zero-Order Hold** must be included.
 - Sampling alone is not enough.

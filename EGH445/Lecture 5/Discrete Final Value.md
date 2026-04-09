@@ -1,5 +1,3 @@
-# Discrete Final Value
-
 ## Purpose
 - For a **stable** discrete-time system, the final steady-state value can be found directly in the $z$-domain.
 

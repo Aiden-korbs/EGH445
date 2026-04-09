@@ -13,11 +13,13 @@ $$
 $$
 
 ## Categories
-| Pole Location | Stability Meaning |
-|---|---|
-| $|z_i| < 1$ for all poles | **Stable** |
-| poles on $|z|=1$ with no unstable growth case | **Marginally stable** |
-| any pole with $|z_i| > 1$ | **Unstable** |
+| Pole Location   | Stability Meaning |                                  |                       |
+| --------------- | ----------------- | -------------------------------- | --------------------- |
+| $               | z_i               | < 1$ for all poles               | **Stable**            |
+| poles on $      | z                 | =1$ with no unstable growth case | **Marginally stable** |
+| any pole with $ | z_i               | > 1$                             | **Unstable**          |
+
+
 
 ## Characteristic Equations
 ### From transfer function
