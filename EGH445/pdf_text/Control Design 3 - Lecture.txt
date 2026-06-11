@@ -1,0 +1,1008 @@
+EGH445 - Modern Control
+
+
+
+           Discrete-Time Control Design 3
+           Optimal Control
+
+                                                    Dr Guilherme Froes Silva
+  Consultation: GP-S1111
+                                 School of Electrical Engineering & Robotics
+Email: g.froessilva@qut.edu.au        Queensland University of Technology 1
+Overview
+Quick review of (some of) the content so far.
+When does pole placement work well?
+  And when does it fail?
+What is Optimal Control?
+Why should we do optimal control instead of just pole placement?
+The Linear Quadratic Regulator (LQR).
+Model Predictive Control (MPC).
+
+                                                                   2
+Quick review of (some of) the content so far
+Continuous-time system:
+
+                                                   ẋ(t) = f (x, u),
+                                                   y(t) = g(x, u)
+                                                               ​           ​
+
+
+
+
+Linearised system:
+
+                                          δ ẋ(t) = Aδx(t) + Bδu(t),
+                                          δy(t) = Cδx(t) + Dδu(t),
+                                               ​                                           ​
+
+
+
+
+where δx = x − x
+               ˉ, δu = u − u
+                           ˉ, δy = y − yˉ, and the A, B , C , D are the matrices
+                                                       ​
+
+
+
+
+                             ∂f          ∂f          ∂g          ∂g
+                          A=          B=          C=          D=
+                             ∂x xˉ,uˉ    ∂u xˉ,uˉ    ∂x xˉ,uˉ    ∂u xˉ,uˉ
+                                  ​   ​    ​               ​       ​   ​       ​   ​   ​       ​   ​   ​
+
+                                                                                                           ​
+
+
+
+
+                                                                                                               3
+Discrete-time system:
+
+                                     x(kT + T ) = Gx(kT ) + Hu(kT ),
+                                                y(kT ) = Cx(kT ) + Du(kT ),
+                                                          ​                          ​
+
+
+
+
+where
+
+
+                        H = [∫               eAτ dτ ] B
+                                     T
+        G = eAT ,                        ​
+                                                              (or, if A is invertible, H = A−1 (G − I)B )
+                                 0
+
+State-feedback controller: u(kT ) = −Kx(kT ),
+where K is the feedback gain matrix that is designed to arbitrarily move the poles of the closed-loop system
+
+                                             x(kT + T ) = (G − HK)x(kT )         ​
+
+
+
+
+                                                                                                               4
+This is achieved, for example, by equating the characteristic polynomial of the closed-loop system to a desired
+polynomial,
+
+                              det(zI − (G − HK)) = (z − z1 )(z − z2 ) ⋯ (z − zn )      ​                 ​             ​
+                                                                                                                           ​
+
+
+
+
+    Important
+
+ The solution exists if the system is controllable, i.e. if the controllability matrix C = [H, GH, G2 H, … , Gn−1 H ] has full rank (rank(C) = n).
+
+
+How do you choose the poles?
+
+  ts - settling time                                                                         ln(%OS/100)
+                                                                              ζ=
+     ​
+
+
+
+
+                                                                                                                               ​
+
+
+
+
+  tr - rise time
+     ​
+
+                                                                                           π 2 + ln2 (%OS/100)                 ​
+
+
+
+
+  %OS - percent overshoot                                                            4
+                                                                              ωn =               ​
+
+
+
+
+  ωn - natural frequency                                                            ζts      ​
+
+
+
+
+  ζ - damping ratio (or through percent overshoot)                            s1,2 = −ζωn ± jωn
+                                                                                   ​                         ​   ​   1 − ζ2        ​
+
+
+
+
+                                                                              z1,2 = es1,2 T
+                                                                                   ​
+                                                                                                     ​
+
+
+
+
+                                                                                                                                                     5
+We also saw the Internal Model Principle (e.g. Integral Action) to reject
+disturbances (or follow references) with a known model (e.g. a step input, a
+ramp input, a sinusoidal input, etc.).
+Those still relied on the pole placement approach.
+
+
+
+
+                                                                               6
+Limitations of Pole placement
+Works well for:
+
+  SISO systems (Single Input Single Output)
+  Low order systems (2nd order or when 2nd order dominant, etc.)
+
+Does not work well for:
+  Higher-order systems (4th order and above)
+  MIMO systems (Multiple Input Multiple Output)
+  Stiff systems (e.g. with very different time constants, like 1 ms and 1 s)
+  Highly nonlinear systems (i.e. linearisation quickly becomes invalid)
+                                                                               7
+Higher-Order Systems
+                        x(kT + T ) = Gx(kT ) + Hu(kT ),
+                                y(kT ) = Cx(kT ) + Du(kT ),
+                                           ​                                         ​
+
+
+
+
+where       x(kT ) ∈ Rn ,               u(kT ) ∈ R,              y(kT ) ∈ R,             n>3
+   Important
+
+The link between pole locations and desired time-domain response becomes less clear. Arbitrary choices can
+lead to poor performance or excessive control effort.
+How do you choose the best pole locations for a 5th, 10th, or higher-order system?
+
+
+
+
+                                                                                                             8
+MIMO Systems
+Let’s start with an example.
+Consider a simple MIMO system with two states and two inputs:
+
+                                           1       0.1              1                  0
+                            x(kT + T ) = [             ] x(kT ) + [                      ] u(kT )
+                                           0       0.8              0                  1
+                                         ​     ​      ​                        ​           ​                   ​
+
+
+
+
+We want to place the poles at 0.4 and 0.6, by using u(kT ) = −Kx(kT ), where K = [                                                        ].
+                                                                                   k1                                      ​           k2​
+
+
+
+
+                                                                                   k3                                                  k4
+                                                                                                                               ​             ​
+
+
+
+
+                                                                                                                           ​             ​
+
+
+
+
+The characteristic polynomial is given by:
+
+                                              z − 1 + k1                        k2 − 0.1
+                  det(zI − (G − HK)) = det ([                                              ])
+                                                                      ​                ​
+
+
+
+
+                                                  k3                          z − 0.8 + k4
+                                                                          ​                                ​
+
+
+
+
+                                                              ​                                        ​
+
+
+
+
+              ​                                                                                                                    ​
+
+
+
+
+                  = z 2 + (k1 + k4 − 1.8)z + (0.1k3 − k4 − 0.8k1 + k1 k4 − k2 k3 + 0.8)
+                               ​   ​                      ​       ​                ​           ​   ​               ​   ​
+
+
+
+
+                                                                                                                                                 9
+The desired characteristic polynomial is given by:
+
+                                               (z − 0.4)(z − 0.6) = z 2 − 1z + 0.24                       ​
+
+
+
+
+When we equate the coefficients, we get:
+
+
+                                  {
+                                    (k1 + k4 − 1.8) = −1
+                                           ​       ​
+
+
+
+
+                                    0.1k3 − k4 − 0.8k1 + k1 k4 − k2 k3 + 0.8 = 0.24
+                                                                                                                     ​   ​
+
+
+
+
+                                               ​       ​             ​        ​   ​       ​   ​
+
+
+
+
+    Important
+
+ Note that we have two equations and four unknowns. This means that we have degrees of freedom in the design. We can choose two of the four variables
+ arbitrarily, and then solve for the other two.
+
+
+This seems like a good idea, but it is not. The problem is that different choices of K , even if they lead to the
+same eigenvalues, can lead to different eigenvectors. The closed-loop system’s eigenvectors directly affect the
+response of the system.
+
+
+
+                                                                                                                                                        10
+Let k2 = k3 = 0 and consider the following two cases of gains matrices K1 and K2 .
+        ​        ​                                                                                        ​   ​
+
+
+
+
+                                                            0.6        0                0.4        0
+                                                   K1 = [                 ],   K2 = [                 ]
+                                                             0        0.2                0        0.4
+                                                      ​           ​      ​       ​            ​      ​
+
+
+
+
+Both of which lead to the same eigenvalues we wanted. But let’s simulate the system with both K1 and K2 .         ​   ​
+
+
+
+
+  1   import numpy as np
+  2   import matplotlib.pyplot as plt
+  3   import control as ctrl
+  4
+  5   # Create the system matrices
+  6   G = np.array([[1, 0.1], [0, 0.8]])
+  7   H = np.array([[1, 0], [0, 1]])
+  8   C = np.array([[1, 0], [0, 1]]) # Outputs are the states
+  9   D = np.array([[0, 0], [0, 0]])
+ 10   K1 = np.array([[0.6, 0], [0, 0.2]])
+ 11   K2 = np.array([[0.4, 0], [0, 0.4]])
+ 12   Gcl1 = G - H @ K1
+ 13   Gcl2 = G - H @ K2
+ 14
+ 15   Ts = 0.1 # Sampling time (seconds)
+ 16   # Create the closed-loop LTI systems
+ 17   sys1 = ctrl.ss(Gcl1, H, C, D, Ts)
+
+
+
+
+Example_Mimo_PP.py on GitHub
+                                                                                                                          11
+MIMO Systems
+                       x(kT + T ) = Gx(kT ) + Hu(kT ),
+                               y(kT ) = Cx(kT ) + Du(kT ),
+                                          ​                                           ​
+
+
+
+
+x(kT ) ∈ Rn ,            u(kT ) ∈ Rm ,               y(kT ) ∈ Rp ,             n, m, p > 1
+   Important
+
+For MIMO systems, pole placement is significantly more complex. Specifying only the eigenvalues leaves
+degrees of freedom in the eigenvectors, which also affect the response. The design process becomes non-
+unique and less intuitive.
+
+How do you systematically handle interactions between different inputs and outputs?
+
+
+
+                                                                                                          12
+Performance trade-off
+Finally, pole placement does not consider the control effort, not addressing
+the trade-off between:
+
+   regulating the state, by making x(kT ), or δx(kT )1, small
+   1
+       For linearised systems, we defined δx = x − x
+                                                   ˉ.
+   regulating required control effort u(kT ).
+
+       Important
+
+ You might achieve desired poles but with impractically large control signals.
+
+ Which, like in the following example, can lead to instability.
+
+                                                                                 13
+Linear Controller Failure for a Nonlinear System
+Consider a scalar system with cubic nonlinearity, ẋ(t) = −x(t) + x(t)3 + u(t).
+−x represents a stabilizing linear dynamic.
+x3 is a destabilizing nonlinearity that becomes significant for larger values of ∣x∣.
+We want to design a controller u(kT ) to stabilize the system at x
+                                                                 ˉ = 0 (requiring u
+                                                                                  ˉ = 0).
+1. Linearise the system around the equilibrium point (x
+                                                      ˉ = 0, u
+                                                             ˉ = 0):
+                               ∂
+                            A=    (−x + x3 + u)         = (−1 + 3x2 )     = −1
+                               ∂x
+                                         ​                         ​          ​                 ​   ​
+
+
+
+
+                                                x=0,u=0               x=0
+
+                                                ∂
+                                             B=    (−x + x3 + u)         =1
+                                                ∂u
+                                                          ​                         ​   ​
+
+
+
+
+                                                                 x=0,u=0
+
+The linearised continuous-time system is                δ ẋ(t) = −δx(t) + δu(t) .          ​
+
+
+
+
+                                                                                                        14
+2. Discretise the system with a sampling time T = 0.1s:
+
+                          x(kT + T ) = Gx(kT ) + Hu(kT ),
+                                         ​                                    y(kT ) = x(kT )   ​
+
+
+
+
+where G = e−AT = 0.905, and H = A−1 (G − I)B = 0.095.
+
+The discrete-time (linearised) system is x(kT + T ) = 0.905x(kT ) + 0.095u(kT ) .                   ​
+
+
+
+
+3. Design u(kT ) = −Kx(kT ) to place the closed-loop pole of this linearised system at p = 0.5.
+
+3.1 Design through pole placement. The closed-loop is x(kT + T ) = (G − HK)x(kT ).
+We want the closed-loop pole to be equal to p = 0.5:
+Try to do this through equating the characteristic polynomials: det(zI − (G − HK)) = (z − p).
+
+
+
+
+                                                                                                        15
+                                             0.905 − 0.095K = 0.5
+                                                            0.095K = 0.905 − 0.5 = 0.405
+                                                                          ​                                         ​
+
+
+
+
+                                                                     0.405
+                                                                 K=        = 4.263
+                                                                     0.095
+                                                                                          ​
+
+
+
+
+So, the linear controller designed for the linearized system is u(kT ) = −4.263x(kT ) .                                            ​
+
+
+
+
+4. Test the controller on the original nonlinear system.
+Simulate the continuous nonlinear dynamics, but apply the control input u(kT ) = −Kx(kT ) constant over
+the period [kT , kT + T ) (Zero-Order Hold).
+
+    Important
+
+ Note that the controller was derived for the linearised system, which ignores the x3 term. The linear model is only accurate for small x (close to the
+ equilibrium x = 0). When ∣x∣ becomes large, the x3 term can dominate, and the linear controller may fail.
+
+
+
+
+                                                                                                                                                          16
+  1   import numpy as np                                      Simulation failed at step 2 (t=0.20) for x(0)=2.4
+  2   from scipy.integrate import solve_ivp
+  3   import matplotlib.pyplot as plt
+  4
+  5   # Set default font size for plots
+  6   plt.rcParams['font.size'] = 14
+  7
+  8   # 1. Nonlinear System Dynamics
+  9   def nonlinear_system(x, u):
+ 10       # Scalar system dynamics: dx/dt = -x + x^3 + u
+ 11       return -x + x**3 + u
+ 12
+ 13   # 2. Linear Controller Parameters (derived above)
+ 14   Ad = 0.905
+ 15   Bd = 0.095
+ 16   K = 4.263
+ 17   Ts = 0.1
+ 18   x_eq = 0.0 # Equilibrium state
+ 19
+ 20   # 3. Simulation Setup
+ 21   t_start = 0
+ 22   t_end = 1.0 # Shorter simulation time might be enough
+ 23   n_steps = int(t_end / Ts)
+ 24
+ 25   # Initial Conditions to compare
+
+
+
+Example_Nonlinear_Linear_Controller.py on GitHub
+
+
+
+
+                                                                                                                  17
+Optimal Control
+What is optimal?
+Optimal means best. But best in terms of what?
+  Best in terms of performance?
+  Best in terms of low control effort?
+  Best in terms of a (generalised) cost?
+
+    Key Idea:
+
+ Instead of choosing pole locations, you define what constitutes good performance via a cost function J .
+
+                                                                                                            18
+The Discrete-Time Optimal Control Problem
+Consider the System Dynamics1, x(kT + T ) = Gx(kT ) + Hu(kT ),                                                 x(0) = x0 .
+                                                                                                                         ​
+
+
+
+
+1
+    The general concept extends to nonlinear systems, but through methods that are beyond the scope of this course.
+
+We want to find u(kT ) = −Kx(kT ) that minimises the Cost Function / Performance Index2:
+                                  ∞
+                        J = ∑ (x(kT )T Qx(kT ) + u(kT )T Ru(kT )) ,
+                                      ​
+                                                                                                             Q ⪰ 0,   R≻0
+                                k=0
+
+2
+    This is an infinite horizon cost function, where the state penalty matrix Q and the control penalty matrix R define the cost.
+
+The solution to this problem is the Linear Quadratic Regulator (LQR).
+       Additional Reading
+
+    For more information about the general optimal control problem, see the additional readings on Canvas.
+
+A ⪰ 0 means that A is positive semi-definite, i.e. xT Ax ≥ 0 for all x ∈ Rn .
+A ≻ 0 means that A is positive definite, i.e. xT Ax > 0 for all x ∈ Rn and x =
+                                                                              0.
+
+                                                                                                                                    19
+The Discrete Linear Quadratic Regulator (DLQR)
+The gain K that minimises the cost function1, subject to the system dynamics2 is given by:
+
+                                                       K = (R + H ⊺ P H)−1 H ⊺ P G,
+
+which depends on the unique, symmetric, positive semi-definite solution P of the Discrete Algebraic Riccati
+Equation (DARE):
+
+                                P = G⊺ P G − (G⊺ P H)(R + H ⊺ P H)−1 (H ⊺ P G) + Q,
+Remember that P must be unique, symmetric, positive semi-definite, that is P = P ⊺ ⪰ 0.
+
+    Note
+
+ The full derivation of the optimal control gain K formula is beyond the scope of the course. If you’re curious, start by investigating the Bellman’s Principle of
+ Optimality (Dynamic Programming).
+
+           ∞
+1. J = ∑k=0 (x(kT )T Qx(kT ) + u(kT )T Ru(kT )) ,
+               ​
+                                                                   Q ⪰ 0,      R≻0
+2. x(kT + T ) = Gx(kT ) + Hu(kT ),               x(0) = x0    ​
+
+
+
+
+                                                                                                                                                                     20
+Design of DLQR Controllers
+The design of DLQR controllers is based on the following steps:
+
+1. Check controllability of x(KT + T ) = Gx(kT ) + Hu(kT ).
+2. Select the cost matrices Q ⪰ 0 and R ≻ 0.
+       ∞
+  J = ∑k=0 (x(kT )T Qx(kT ) + u(kT )T Ru(kT ))
+            ​
+
+
+
+
+3. Solve the DARE to find the positive semi-definite symmetric P .
+4. Compute the gain matrix K = (R + H ⊺ P H)−1 H ⊺ P G.
+5. Implement the controller u(kT ) = −Kx(kT ).
+6. Test the controller performance and adjust Q and R as necessary.
+                                                                      21
+Existence and Stability of the Solution
+We need to check if the solution to the DARE exists and is stable.
+   Questions
+
+  Does a unique solution to the DARE always exist?
+  Does the resulting controller guarantee stability?
+
+Turns out that we need the following conditions.
+Conditions for Stabilizing DLQR Solution:
+
+  Controllability: Can the controller move all unstable poles of the system?
+  Observability: Can all unstable models be observed by the cost function?
+
+
+                                                                               22
+The DLQR Stability Theorem
+      Theorem: DLQR Stability Theorem
+
+Assume R ≻ 0 and Q ⪰ 0. Let Q = V T V (where V might not be unique).
+
+If the following conditions hold:
+
+1. The pair (G, H) is controllable.
+
+2. The pair (G, V ) is observable1.
+  1
+      Note that this is not the same as the observability of the system, as what’s important is observability of states by the cost function.
+
+
+Then:
+
+1. A unique solution P = P ⊺ ⪰ 0 to the DARE exists.
+2. The resulting controller closed-loop system is stable.
+
+                                                                                                                                                23
+Simple Example of DLQR Design
+Let’s consider a simple example of a DLQR design and solve it “by hand”. Consider again the scalar system with
+cubic nonlinearity and its discrete linearised version,
+
+        ẋ(t) = −x(t) + x(t)3 + u(t)           →     x(kT + T ) = 0.905x(kT ) + 0.095u(kT )
+
+  Controllability: C = [H, GH] = [0.095, 0.086475] has full rank (rank(C) = 1).
+  Cost Matrices: Select Q = 10.0 and R = 0.1.
+  Observability: O = [V , V G]⊺ , where V =         Q. Then O = [3.162, 2.857]⊺ , which has full rank.
+  Solution P = P ⊺ ⪰ 0 of the DARE: P − G⊺ P G + (G⊺ P H)(R + H ⊺ P H)−1 (H ⊺ P G) = Q
+
+
+
+
+                                                                                                                 24
+                                                           2
+                                                 (GHP    )
+                                    P − G2 P +          2
+                                                             =Q
+                                                 R+H P
+                                                          ​
+
+
+
+
+                        (P − G2 P )(R + H 2 P ) + G2 H 2 P 2 = Q(R + H 2 P )
+                    P R + H 2 P 2 − G2 P R − QR − QH 2 P = 0  ​                ​
+
+
+
+
+                (H 2 )P 2 + (R − G2 R − QH 2 )P + (−QR) = 0
+                                     0.009P 2 − 0.0722P − 1 = 0
+                              P = 15.2571 or P = −7.2624
+
+Pick the positive semi-definite solution: P = 15.2571.
+Compute the gain K = (R + H ⊺ P H)−1 H ⊺ P G = 5.519.
+
+
+
+
+                                                                                   25
+  1   import numpy as np                                                 DARE Solution S = 15.257 (for Q=10.0, R=0.1)
+  2   from scipy.integrate import solve_ivp                              DLQR Gain K = 5.519
+  3   from scipy.linalg import solve_discrete_are # Import DARE solver   Linear Closed-Loop Pole = 0.381. (STABLE)
+  4   import matplotlib.pyplot as plt
+  5
+  6   # Set default font size for plots
+  7   plt.rcParams['font.size'] = 14
+  8
+  9   # 1. Nonlinear System Dynamics
+ 10   def nonlinear_system(x, u):
+ 11       # Scalar system dynamics: dx/dt = -x + x^3 + u
+ 12       return -x + x**3 + u
+ 13
+ 14   # 2. Linear Controller Parameters (derived above)
+ 15   Ad = 0.905
+ 16   Bd = 0.095
+ 17   K = 4.263
+ 18   Ts = 0.1
+ 19   x_eq = 0.0 # Equilibrium state
+ 20
+ 21   # 3. Simulation Setup
+ 22   t_start = 0
+ 23   t_end = 1.0 # Shorter simulation time might be enough
+ 24   n_steps = int(t_end / Ts)
+ 25
+
+
+
+
+Example_Nonlinear_DLQR.py on GitHub
+
+
+
+                                                                                                                        26
+MIMO Example of DLQR Design
+Consider the MIMO system with two states and two inputs:
+                                                              1 0.1              1        0
+                                              x(kT + T ) = [        ] x(kT ) + [            ] u(kT )
+                                                              0 0.8              0        1
+                                                                ​    ​                ​    ​
+
+
+
+
+                                                            ​                                          ​
+
+
+
+
+                                                    y(kT ) = Cx(kT ) + Du(kT )
+
+  1   import numpy as np                                                 K3 = [0.990, 0.099;
+  2   import matplotlib.pyplot as plt                                     0.000, 0.792], eig(G - H @ K3) = [0.00980006 0.0078745 ]
+  3   import scipy.linalg as linalg
+  4   import control as ctrl
+  5   # Create the system matrices
+  6   G = np.array([[1, 0.1], [0, 0.8]])
+  7   H = np.array([[1, 0], [0, 1]])
+  8   C = np.array([[1, 0], [0, 1]]) # Outputs are the states
+  9   D = np.array([[0, 0], [0, 0]])
+ 10
+ 11   # Pole placement for MIMO system
+ 12   K1 = np.array([[0.6, 0], [0, 0.2]])
+ 13   K2 = np.array([[0.4, 0], [0, 0.4]])
+ 14
+ 15   # QLQR design for MIMO system
+
+
+
+
+Example_Mimo_DLQR.py on GitHub
+
+                                                                                                                                     27
+Tuning Q and R: The Trade-off
+ The relative size (Q/R ratio) affects the trade-off between state regulation
+ and control effort.
+ Increasing Q relative to R → increases the penalty on state deviation
+   faster state convergence,
+   higher control effort.
+ Increasing R relative to Q → increases the penalty on control effort
+   slower state convergence,
+   lower control effort.
+
+                                                                                28
+Quick Example of DLQR Tuning
+   Code
+
+
+
+
+Example_DLQR_Q_Tuning.py on GitHub
+
+                                     29
+Limitations of LQR: Control Saturation
+The Linear Quadratic Regulator may not be suitable for all systems, however.
+Consider the system ẍ = x − cẋ + u, where umin ≤ u(kT ) ≤ umax .
+                                                      ​                    ​
+
+
+
+
+Let’s compare the simulations:
+
+  Unconstrained LQR: No control saturation applied.
+  Saturated LQR: Control effort limited to umin ≤ u(kT ) ≤ umax .
+                                               ​                     ​
+
+
+
+
+  Model Predictive Control (MPC): Control effort limited to umin ≤ u(kT ) ≤ umax , but with a prediction
+                                                                 ​                ​
+
+
+
+
+  horizon.
+
+
+
+
+                                                                                                           30
+Unsaturated LQR
+  1   # Scenario 1: Unconstrained LQR for Nonzero Regulation (Damped 2nd Or   DLQR Gain for error K = [[8.76224795 4.36193866]]
+  2                                                                           Simulation loop time: 0.02 s
+  3   import numpy as np
+  4   from scipy.integrate import solve_ivp
+  5   from scipy.linalg import solve_discrete_are, expm
+  6   from scipy.signal import cont2discrete
+  7   import matplotlib.pyplot as plt
+  8   import time
+  9
+ 10   # print("--- Running Scenario 1: Unconstrained LQR (Nonzero Setpoint,
+ 11
+ 12   # --- 1. System Definition ---
+ 13   # Continuous system: dx/dt = Ac*x + Bc*u
+ 14   # x = [y, y_dot]^T = [x1, x2]^T
+ 15   # d(x1)/dt = x2
+ 16   # d(x2)/dt = x1 - c*x2 + u
+ 17   c_damping = 0.5
+ 18   Ac = np.array([[0., 1.], [1., -c_damping]])
+ 19   Bc = np.array([[0.], [1.]])
+ 20   n_states = Ac.shape[0]
+ 21   m_inputs = Bc.shape[1]
+ 22
+ 23   def system_ode(t, x, u, Ac_mat, Bc_mat):
+ 24       u_val = u if np.isscalar(u) else u[0]
+ 25       dxdt = Ac_mat @ x + Bc_mat @ np.array([u_val])
+
+Example_Unconstrained_LQR.py on GitHub
+
+
+
+                                                                                                                                  31
+Saturated LQR
+  1   # Scenario 2: Saturated LQR for Nonzero Regulation (Damped 2nd Order    DLQR Gain for error K = [[8.76224795 4.36193866]]
+  2                                                                           Control Limits: [-2.5, 0.5]
+  3   import numpy as np                                                      Simulation loop time: 0.03 s
+  4   from scipy.integrate import solve_ivp
+  5   from scipy.linalg import solve_discrete_are, expm
+  6   from scipy.signal import cont2discrete
+  7   import matplotlib.pyplot as plt
+  8   import time
+  9
+ 10   # print("--- Running Scenario 2: Saturated LQR (Nonzero Setpoint, Dam
+ 11
+ 12   # --- 1. System Definition ---
+ 13   c_damping = 0.5
+ 14   Ac = np.array([[0., 1.], [1., -c_damping]])
+ 15   Bc = np.array([[0.], [1.]])
+ 16   n_states = Ac.shape[0]
+ 17   m_inputs = Bc.shape[1]
+ 18   def system_ode(t, x, u, Ac_mat, Bc_mat):
+ 19       u_val = u if np.isscalar(u) else u[0]
+ 20       dxdt = Ac_mat @ x + Bc_mat @ np.array([u_val])
+ 21       return dxdt.flatten()
+ 22
+ 23   # --- 2. Discretization ---
+ 24   Ts = 0.1
+ 25   Ad, Bd, _, _, _ = cont2discrete((Ac, Bc, np.eye(n_states), np.zeros((
+
+
+Example_Saturated_LQR.py on GitHub
+
+
+                                                                                                                                  32
+MPC
+  1   # Scenario 3: MPC for Nonzero Regulation (Damped 2nd Order System)      Control Limits: [-2.5, 0.5]
+  2                                                                           MPC CVXPY Problem defined.
+  3   import numpy as np
+                                                                              MPC Simulation loop time: 12.02 s
+  4   from scipy.integrate import solve_ivp
+  5   from scipy.linalg import solve_discrete_are, expm
+  6   from scipy.signal import cont2discrete
+  7   import cvxpy as cp # Requires cvxpy and a solver like OSQP
+  8   import matplotlib.pyplot as plt
+  9   import time
+ 10
+ 11   # print("--- Running Scenario 3: MPC (Nonzero Setpoint, Damped System
+ 12
+ 13   # --- 1. System Definition ---
+ 14   c_damping = 0.5
+ 15   Ac = np.array([[0., 1.], [1., -c_damping]])
+ 16   Bc = np.array([[0.], [1.]])
+ 17   n_states = Ac.shape[0]
+ 18   m_inputs = Bc.shape[1]
+ 19   def system_ode(t, x, u, Ac_mat, Bc_mat):
+ 20       u_val = u if np.isscalar(u) else u[0]
+ 21       dxdt = Ac_mat @ x + Bc_mat @ np.array([u_val])
+ 22       return dxdt.flatten()
+ 23
+ 24   # --- 2. Discretization ---
+ 25   Ts = 0.1
+
+
+
+Example_MPC.py on GitHub
+
+
+                                                                                                                  33
+Model Predictive Control (MPC)
+MPC is a powerful control strategy that uses an optimization problem to
+determine the control input at each time step. It is particularly useful for
+systems with constraints and nonlinearities.
+    Tip
+
+ While LQR solves the infinite-horizon optimal control problem, MPC solves a finite-horizon optimization
+ problem at each time step (this horizon is MPC’s prediction horizon, i.e. how many steps ahead it looks).
+
+
+
+
+                                                                                                             34
+How MPC Works
+1. Finds an optimal control sequence for a finite-horizon problem.
+2. The first control input of the optimal sequence is applied to the system.
+3. Repeats at the next time step, using the current state as the new initial
+   condition.
+
+MPC vs LQR:
+  MPC handles constraints (saturation, state limits, rates of change, etc).
+  MPC is more complex and computationally intensive than LQR.
+  MPC’s performance depends on the accuracy of the system model.
+                                                                               35
+Annexes
+
+
+          36
+Quadratic Forms and Positiveness
+For a square matrix P and a vector x, the product x⊺ P x is a scalar called a quadratic form.
+                          1                   2 x1
+For example, [x1 , x2 ] [                      ] [ ] = 1x21 + 2x1 x2 + 3x1 x2 + 4x22 .
+                                                             ​
+
+
+
+
+                          3                   4 x2
+                   ​         ​            ​    ​                 ​   ​       ​   ​   ​   ​             ​
+
+
+
+
+                                                             ​
+
+
+
+
+P ⪰ 0 means that P is positive semi-definite, i.e. xT P x ≥ 0 for all x ∈ Rn .
+P ≻ 0 means that P is positive definite, i.e. xT P x > 0 for all x ∈ Rn and x =
+                                                                               0.
+  A symmetric matrix P is positive definite if (and only if)
+      all its eigenvalues are positive.
+      all its principal minors are positive.
+
+          p1,1               p1,2             p1,3
+                                              p2,3 ≻ 0 ⟺ p1,1 > 0, det [                                  ] > 0, det(P ) > 0
+                                                                         p1,1                        p1,2
+                       ​            ​              ​
+
+
+
+
+      P = p2,1               p2,2
+                                                                                             ​             ​
+
+
+
+
+                                                                         p2,1                        p2,2
+               ​       ​ ​          ​ ​            ​ ​   ​               ​                       ​             ​
+
+
+
+
+          p3,1               p3,2             p3,3
+                                                                                             ​             ​
+
+
+
+
+                       ​            ​              ​
+
+
+
+
+                                                                                                                               37
+LQR Cost Function and Tuning
+Note that the cost function is a quadratic form in the state and control variables.
+                                                     ∞
+                                                 J = ∑(x(k)⊺ Qx(k) + u(k)⊺ Ru(k))
+                                                           ​
+
+
+
+
+                                                     k=0
+
+Consider x(k) = [x1 (k), x2 (k)]⊺ and u(k) = [u1 (k), u2 (k)]⊺ . The cost function can be expressed as:
+                         ​                   ​                                 ​           ​
+
+
+
+
+                         ∞
+               J = ∑(q1,1 x1 (k)2 + q1,2 x1 (k)x2 (k) + q2,1 x2 (k)x1 (k) + q2,2 x2 (k)2
+                                 ​       ​       ​                 ​   ​           ​               ​   ​           ​           ​   ​
+
+
+
+
+                        k=0
+                 ​                                                                                                                     ​
+
+
+
+
+                     + r1,1 u1 (k)2 + r1,2 u1 (k)u2 (k) + r2,1 u2 (k)u1 (k) + r2,2 u2 (k)2 )
+                             ​       ​                ​        ​           ​           ​                   ​           ​   ​
+
+
+
+
+Notice that you have freedom to tune the individual weights qi,j and ri,j in the cost function.​               ​
+
+
+
+
+                                                                                                                                           38
+

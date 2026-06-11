@@ -4,7 +4,10 @@
 [[Nonlinear Systems and Linearisation |Lecture 03 - Nonlinear Systems and Linearisation]]
 [[Discrete State Space Models - Overview|Lecture 04 - Discrete State Space Models]]
 
-[[Digital Control Design 1 |Lecture 06 Discrete - Time Control System Design ]]
+[[Digital Control Design 1 |Lecture 06 - Discrete-Time Control System Design ]]
+
+[[Digital Control Design 2 |Lecture 08 - Discrete-Time Control Design 2]]
+[[Control Design 3 |Lecture 09 - Discrete-Time Control Design 3]]
 
 
 ## Workshops

@@ -1,0 +1,1130 @@
+EGH445 - Modern Control
+
+
+
+           Practical Considerations
+           Observers and Output Feedback
+
+                                                    Dr Guilherme Froes Silva
+  Consultation: GP-S1111
+                                 School of Electrical Engineering & Robotics
+Email: g.froessilva@qut.edu.au        Queensland University of Technology 1
+Overview
+Quick recap: State-feedback control and estimation.
+Reality gap: Ideal models vs real-world implementation.
+Noise, constraints, hardware limits, model errors, etc.
+LQR and Kalman Filter tuning.
+Emulation design: digital controllers from continuous ones.
+Implementation: hardware and software.
+
+
+                                                              2
+State-feedback control and
+estimation
+State vs Output Feedback Revisited
+
+
+
+
+                                     3
+State vs Output Feedback Revisited
+When and why? Consider the system x(kT + T ) = Gx(kT ) + Hu(kT ), y(kT ) = Cx(kT ).
+System Matrix G = eAT represents the internal dynamics of the system.
+
+  It describes how the state x(kT ) evolves over time. Usually inherent to the system.
+
+                      T
+Input Matrix H = ∫0 eAτ Bdτ represents how the input u(kT ) affects the state x(kT ).
+                          ​
+
+
+
+
+  Relates to the actuator(s) chosen (e.g. types of motors, heaters, valves, etc.).
+
+Output Matrix C represents how the states are measured as outputs y(kT ).
+
+  Relates to the sensor(s) chosen (e.g. types and placement of sensors, cameras, etc.).
+
+
+
+
+                                                                                          4
+State feedback: u(kT ) = −Kx(kT )                       Output feedback: u(kT ) = −K x
+                                                                                     ^(kT )
+
+ System (G, H) must be controllable.                        System (G, C) must be observable.
+ Closed-loop dynamics, Gcl = G − HK .
+                             ​
+                                                            Observer dynamics, Gobs = G − LC .
+                                                                                     ​
+
+
+
+
+ Assumes all states are available.                          Used when only y(kT ) = Cx(kT ) is available.
+    Pole placement: K gain.                                    y(kT ) is what is actually being measured.
+    LQR: K gain and cost function Q, R.                                      ^(kT ) from y(kT ) and u(kT ).
+                                                            Needs estimating x
+    Integral action: Dynamic Extension and KI gain.
+                                                ​
+
+
+
+
+                                                               Luenberger Observer - L gain.
+                                                               Kalman Filter - Kk gain and noise covariances.
+                                                                                 ​
+
+
+
+
+ Practical Question: When is it feasible/necessary to measure all states versus estimate them?
+    Sensor cost and complexity (relates to choice of C ).
+    Sensor availability (some states might be internal/unmeasurable).
+
+                                                                                                                5
+Practical Trade-offs
+ Observer Performance:
+    Luenberger poles determine error convergence speed. Faster poles → potentially higher gain L.
+    Kalman Filter dynamic gain Kk minimises the estimation error covariance iteratively, balancing model
+                                      ​
+
+
+
+
+    trust vs measurement trust based on noise characteristics (Q, R).
+ Noise Amplification:
+    Large observer gains (L or Kk ) can amplify measurement noise (v(kT )), negatively impacting the
+                                  ​
+
+
+
+
+    control input u(kT ) = −K x
+                              ^(kT ). There’s a trade-off: fast estimation vs noise sensitivity.
+ Computational Load:
+    Observers add computational cost (matrix multiplications, additions).
+    Increase in computational cost: Luenberger observers → Kalman filters → Extended Kalman filters (EKF).
+    Needs to be feasible on the target hardware, considering the selected/needed sampling time T .
+
+
+                                                                                                             6
+  Certainty Equivalence Principle:
+     Recall: Controller (K) and Observer (L) can be designed independently.
+     This holds perfectly if the model is perfect.
+     Model mismatch can affect performance;
+         Sometimes detuning the observer (slower poles) can improve robustness in practice.
+  Discussion Point: Do the benefits of state estimation outweigh the costs?
+
+Benefits of State Estimation:                           Costs of State Estimation:
+
+  Handling unmeasured states                              Added complexity (and computational load)
+  Better performance via full state feedback              Need of tuning
+                                                          Sensitivity to noise
+                                                          Model mismatch
+
+Depends on the application!
+
+                                                                                                      7
+Practical Considerations:
+LQR Design
+ LQR Fundamentals
+
+
+
+
+                            8
+Recap: LQR Fundamentals
+Goal: Find u(kT ) = −Kx(kT ) that minimises a quadratic cost function over an infinite horizon.
+Cost Function (J): Balances state regulation (Q, state weighting) and control effort (R, control weighting).
+                      ∞
+              J = ∑ (x(kT )T Qx(kT ) + u(kT )T Ru(kT )) ,
+                           ​                                                 Q ⪰ 0,       R≻0
+                     k=0
+
+Solution: Solve the Discrete Algebraic Riccati Equation (DARE) for a unique, positive semi-definite matrix P :
+
+                     P = GT P G − (GT P H)(R + H T P H)−1 (H T P G) + Q
+
+Then the gain is K = (R + H T P H)−1 H T P G.
+Stability: The closed-loop system x(kT + T ) = (G − HK)x(kT ) is guaranteed to be stable if
+(G, H) is controllable and (G, V ) is observable, where Q = V T V .
+
+                                                                                                                 9
+Important remark on (G, V) observability
+ The matrix V (from Q = V T V ) defines which states or state
+ combinations are penalised in the cost J .
+ (G, V ) observability ensures that any unstable behaviour will eventually
+ affect the states penalised by Q, forcing the controller to act.
+
+   Analogy
+
+C describes the outputs, i.e. what states are measured (through physical sensors).
+V describes what states are penalised (design choice in Q).
+Analogously to designing controllers assuming full state availability, V and C do not need to be the same.
+
+                                                                                                             10
+Tuning Q and R in practice
+ Starting Point: Diagonal Matrices
+    Often start with diagonal Q and R.
+    Q = diag(q1 , q2 , … , qn ): Penalises squared state deviations qi x2i .
+                         ​       ​       ​                                 ​       ​
+
+
+
+
+    R = diag(r1 , r2 , … , rm ): Penalises squared control inputs rj u2j .
+                     ​       ​               ​                         ​       ​
+
+
+
+
+ Relative Weights Matter:
+    The absolute values of Q and R don’t matter as much as their ratio. Scaling both Q and R by the same
+    factor results in the same gain K .
+    Common practice: Fix one element (e.g., R = 1 or R = I ) and tune the elements of Q.
+ Interpreting Weights:
+    Larger qi means state xi is more important to regulate quickly/keep small.
+             ​                       ​
+
+
+
+
+    Larger rj means control input uj is more “expensive” (e.g., energy consumption, saturation limits).
+                 ​                               ​
+
+
+
+
+                                                                                                           11
+Tuning Strategies:
+   Bryson’s Rule (Rule of Thumb): Scale weights based on maximum acceptable deviations/inputs:
+                     1                                 1
+      qii ≈ (max acceptable
+         ​
+
+
+
+
+                            xi ) 2
+                                ​
+                                   ,​   rjj ≈ (max acceptable
+                                           ​
+
+
+
+
+                                                              uj ) 2
+                                                                  ​
+                                                                       ​
+
+
+
+
+   Trial and Error (Simulation/Experiment):
+    1. Simulate/run the system.
+    2. Observe states x(kT ) and inputs u(kT ).
+    3. If states converge too slowly → Increase elements in Q relative to R.
+    4. If control effort is too high/saturating → Increase elements in R relative to Q.
+Non-Diagonal Weights:
+   Off-diagonal terms in Q can penalise relationships between states (e.g., x1 x2 ).
+                                                                               ​   ​
+
+
+
+
+   Off-diagonal terms in R can penalise simultaneous use of multiple actuators.
+   Use only if there’s a clear physical reason; increases tuning complexity.
+
+
+                                                                                                 12
+LQR Limitations Revisited
+ Model Accuracy:
+    LQR performance relies on an accurate linear model (G, H ).
+    Nonlinearities or parameter uncertainties can degrade performance or lead to instability.
+ Constraint Handling:
+    Standard LQR formulation does not explicitly handle constraints on states (x) or inputs (u).
+    Example: Actuator saturation (umin ≤ u(kT ) ≤ umax ).
+                                         ​                      ​
+
+
+
+
+    Calculating gain K and then saturating the control value can lead to poor performance or instability.
+ Implicit Pole Placement:
+    LQR does place closed-loop poles, but indirectly through the choice of Q and R.
+    It’s hard to directly relate Q/R choices to transient response characteristics (like %OS, ts ).
+                                                                                                 ​
+
+
+
+
+ Addressing Limitations:
+    For constraints: Model Predictive Control (MPC) explicitly incorporates constraints in its optimization.
+                                                                                                               13
+Practical Considerations:
+Kalman Filter Design
+   Regarding assessment of this content
+
+You are not expected to know the mechanics/maths of a Kalman Filter implementation.
+
+You are expected to know what it does, why/when it is useful, and how you tune it.
+
+
+
+
+                                                                                      14
+Recap: KF Fundamentals
+Optimal state estimator for linear systems with Gaussian noise.
+
+  System Model with Noise:                                                        Recursive Structure (Predict-Correct):
+                                                                                                                      ^ and error covariance P
+                                                                                   1. Predict: Project state estimate x
+  x(kT + T ) = Gx(kT ) + Hu(kT ) + w(kT )                                             forward using the model (G, H, Q).
+
+           y(kT ) = Cx(kT ) + v(kT )                                                      ^− (kT ) = Gx
+                                                                                                      ^(kT − T ) + Hu(kT − T )
+                      ​                                                       ​
+
+
+
+
+                                                                                          x
+                                                                                          P − (kT ) = GP (kT − T )GT + Qk−1                   ​
+
+
+
+
+        w(kT ): Process noise, Q = E[wwT ]                                         2. Correct (Update): Adjust prediction using the current
+                                                                                      measurement y(kT ) and the calculated Kalman Gain Kk .
+        v(kT ): Measurement noise, R = E[vv T ]                                                                                                   ​
+
+
+
+
+                                                                                          Kk = P − (kT )C T (CP − (kT )C T + R)−1
+                                                                                               ​
+
+
+
+
+                                                                                                   ^− (kT ) + Kk (y(kT ) − C x
+                                                                                          ^(kT ) = x
+                                                                                          x                                ​ ^− (kT ))
+                                                                                          P (kT ) = (I − Kk C )P − (kT )
+                                                                                                                    ​
+
+
+
+
+    Key Idea (watch Workshop 10 for a practical example)
+
+ Kk optimally balances trusting the model prediction vs. trusting the noisy measurement based on the relative sizes of P − (kT ), Q, and R.
+    ​
+
+
+
+
+                                                                                                                                                      15
+The Tuning Challenge
+ “Optimal” performance relies on having the correct noise covariance matrices Q and R.
+    R – sensor measurement uncertainty (variance).
+    Q – dynamics model uncertainty (variance) introduced by, unmodelled forces, discretisation errors, etc.
+ The Problem: In most real-world applications, the true values of Q and R are unknown.
+ Consequence: Choosing incorrect Q and R leads to suboptimal state estimates.
+    If the ratio Q/R is too small, the filter will trust the model too much and ignore useful measurements.
+    Estimates converge slowly and may drift.
+    If the ratio Q/R is too large, the filter will trust the measurements too much and ignore the models.
+    Estimates become noisy.
+ Therefore: Q and R often become tuning parameters adjusted based on observed filter performance, rather
+ than precisely known quantities.
+
+                                                                                                              16
+Tuning Strategies
+Choosing R:                                                                             Choosing Q:
+
+R ∈ Rp×p , where p is the number of outputs.                                            Q ∈ Rn×n , where n is the number of states.
+Often diagonal, when the sensor noise is uncorrelated. Often diagonal and treated as a tuning parameter.
+
+                      σv2                  0                …       0                                         σw2 1                0              …       0
+                         1
+                                                                                                                          ​
+                                  ​
+
+
+
+
+                                                                                                                      ​
+
+
+
+
+                                                                                                                                  σw2 2
+                              ​
+
+
+
+
+                       0                  σv2               …       0                                          0                                  …       0
+                                            2
+                                                                                                                                          ​
+                                                    ​
+
+
+
+
+                                                ​
+
+
+
+
+              Rk =
+                ​     ​               ​                 ​       ​               ​   ​
+                                                                                                      Qk =
+                                                                                                        ​     ​               ​               ​       ​               ​   ​
+
+
+
+
+                          ⋮                ⋮                ⋱  ⋮                                                  ⋮                ⋮              ⋱   ⋮
+                          0                0                … σv2p      ​
+                                                                            ​
+                                                                                                                  0                0              … σw2 n     ​
+                                                                                                                                                                  ​
+
+
+
+
+Determining values:                                                                     Determining values:
+
+  Sensor datasheets: specified noise characteristics.                                    σw2 i reflects how much xi is expected to deviate.
+                                                                                             ​
+                                                                                                 ​                                 ​
+
+
+
+
+  Experimental data: calculated variance from samples.                                   Physical insight: deviation due real dynamics.
+  Cross-correlation: covariance between sensor signals.                                  Iterative tuning: observe residual e(kT ).
+                                                                                                                                                                              17
+Kalman Filter Tuning: Residual Analysis
+The residual is the difference between the actual measurement and the predicted measurement at each step:
+
+                          e(kT ) = y(kT ) − y^− (kT ) = y(kT ) − C x
+                                                    ​              ^− (kT )
+
+  Theoretical Property: For a perfectly modelled and optimally tuned Kalman filter:
+     Zero-mean: E[e(kT )] = 0.
+     White noise: Uncorrelated over time, E[e(kT )e(jT )T ] = 0 for k =
+                                                                       j.
+     Known Covariance: E[e(kT )e(kT )T ] = CP − (kT )C T + Rk .             ​
+
+
+
+
+  Practical Use for Tuning:
+   1. Collect Residuals: Record e(kT ) over a representative run.
+   2. Check Mean: If it’s significantly non-zero: bias in sensors or in the system model.
+   3. Check Whiteness (Autocorrelation): Plot the autocorrelation function (ACF) of the residuals.
+
+Adjust Q and R iteratively until the residuals “look like” zero-mean white noise with the expected covariance.
+                                                                                                                 18
+Emulation Design:
+Digital Controllers from
+Continuous Ones
+Discretising Continuous Controllers
+
+
+
+                                      19
+Emulation: Discretising Continuous Controllers
+Design a digital controller Gd (z) that mimics the behaviour of a pre-designed continuous controller Gc (s).
+                                         ​                                                                                        ​
+
+
+
+
+                                                                                  Why Emulate?
+
+                                                                                     Leverage existing continuous controller designs.
+                                                                                     Control design is sometimes preferred in s-domain.
+                                                                                     Implement advanced continuous controllers digitally.
+
+
+
+
+   Emulation vs. Direct Design
+
+  Direct design: Discretise the plant, then design the controller directly (e.g., using DLQR)
+  Emulation: Design the controller in the continuous domain (e.g., PID, Lead-Lag, LQR) and then discretise it.
+
+
+
+
+                                                                                                                                            20
+Discretisation Methods
+How do we convert a continuous controller Gc (s) into a discrete controller Gd (z)?
+                                               ​                                ​
+
+
+
+
+There are three main methods.
+
+1. Tustin (Bilinear) Transformation
+Uses a trapezoidal integration to get to a bilinear relation between s and z (opposed to s = T1 ln (z)).
+                                                                                               ​
+
+
+
+
+2. Zero-Order Hold (ZOH) Equivalence
+Assumes the input to the controller e(t) is held constant between samples by a ZOH
+
+                                   e(kT + τ ) = e(kT ) for 0 ≤ τ < T
+
+3. Matched Pole-Zero (MPZ) Method
+Maps poles and zeros of Gc (s), in the s-plane, to those of Gd (z), in the z-plane, using z = esT .
+                            ​                                  ​
+
+
+
+
+                                                                                                           21
+Tustin (Bilinear) Transform
+Approximates the continuous-time integration operator 1/s with a discrete-time equivalent derived from the
+trapezoidal rule for numerical integration.
+u(kT ) = ∫ e(t)dt                  →        u(kT ) ≈ u(kT − T ) + T2 (e(kT ) + e(kT − T )).      ​
+
+
+
+
+Taking the z-transform of both sides gives:
+
+                                                              T
+                                          U (z) = z U (z) + (E(z) + z −1 E(z))
+                                                                 −1
+                                                               2
+                                                                                         ​
+
+
+
+
+                                          U (z)   T (1 + z −1 )
+                                                        ​                                                           ​
+
+
+
+
+                                                =
+                                          E(z)    2 (1 − z −1 )
+                                                    ​            ​                  ​
+
+
+
+
+    Transformation Rule
+
+ To convert Gc (s) to Gd (z), substitute s in Gc (s) with:
+               ​          ​                     ​
+
+
+
+
+                                                            2 z−1                                        2 z−1
+                                               s←                 ,      that is,       Gd (z) = Gc (          ).
+                                                            T z+1                                        T z+1
+                                                             ​       ​                       ​       ​    ​   ​
+
+
+
+
+                                                                                                                        22
+Tustin (Bilinear) Transform Properties
+  Maps the left-half of the s-plane entirely into the unit circle in the z-plane.
+  Maps the jω axis of the s-plane onto the unit circle ∣z∣ = 1 in the z-plane.
+  This preserves stability: a stable Gc (s) will result in a stable Gd (z).
+                                        ​                             ​
+
+
+
+
+MATLAB: c2d(Gc, T, 'tustin').
+Python: scipy.signal.cont2discrete(Gc, dt=T, method='bilinear').
+
+
+
+
+                                                                                    23
+Zero-Order Hold (ZOH) Equivalence
+Assumes the input e(t) to the controller is held constant by a Zero-Order Hold (ZOH) for one sampling period T .
+
+  The sampler and ZOH are placed before the continuous controller Gc (s).                ​
+
+
+
+
+  The continuous controller sees a staircase input e(t) = e(kT ) for kT ≤ t < kT + T .
+  The result is z-transformed to get the discrete controller Gd (z).                 ​
+
+
+
+
+                                                      1
+ZOH Transfer Function: Gzoh (s) = s (1 − e−sT ). Positive step at kT minus negative step at kT + T .
+                                             ​            ​
+
+
+
+
+    Transformation Rule
+
+ The pulse transfer function Gd (z) of the discretised controller is given by:
+                                 ​
+
+
+
+
+                           1 − e−sT                           Gc (s)
+ Gd (z) = Z {L      −1
+                         [          Gc (s)]} = (1 − z −1 )Z {        }
+                                                                          ​
+
+
+
+
+     ​                               ​   ​                                       ​
+
+
+
+
+                              s                                 s
+
+
+
+
+                                                                                                                   24
+ZOH Equivalence Properties
+  The ZOH method exactly matches the response of the continuous and
+  discrete systems at the sampling instants if the input to Gc (s) were indeed
+                                                             ​
+
+
+
+
+  staircase (due to the ZOH).
+  Stability is preserved if Gc (s) is stable.
+                              ​
+
+
+
+
+MATLAB: c2d(Gc, T, 'zoh').
+Python: scipy.signal.cont2discrete(Gc, dt=T, method='zoh').
+
+
+
+
+                                                                                 25
+Matched Pole-Zero (MPZ) Method
+Preserves the locations of poles/zeros by mapping them directly using the fundamental relationship z = esT .
+1. Map Poles and Zeros:
+
+  Map poles and zeros of Gc (s) to poles and zeros of Gd (z) using the relationship z = esT .
+                              ​                                         ​
+
+
+
+
+                                        ∏(z−zzj )
+  Form the basic structure: Gd (z) = Kd ∏(z−z ) .
+                                                                ​
+
+
+                                                        ​
+
+
+
+
+                                  ​         ​                       ​
+
+
+
+
+                                             pi     ​
+                                                            ​
+
+
+
+
+2. Adjust Numerator Order (Add Zeros at z = −1):
+
+  To match phase characteristics, zeros at z = −1 (Nyquist frequency) are added to the numerator until its
+  order is equal to or one less than the denominator’s order.
+  This helps average/smooth the input, similar to Tustin’s trapezoidal rule effect.
+
+3. Match DC Gain:
+
+  Adjust Kd so that the DC gain of Gd (z) (at z = 1) matches the DC gain of Gc (s) (at s = 0).
+             ​                          ​                                             ​
+
+
+
+
+                                                                                                               26
+Matched Pole-Zero Method: Properties
+Stability Preservation:
+
+  The poles are mapped such that ∣z∣ = ∣esT ∣ = eRe(s)T < 1, preserving the stability of Gc (s). ​
+
+
+
+
+Frequency Response:
+
+  The matching of DC gain ensures that the low-frequency response of Gd (z) is similar to Gc (s).
+                                                                             ​               ​
+
+
+
+
+  Comparison to Other Methods:
+      Tustin: Generally better overall frequency response approximation.
+      ZOH: Exact at sampling instants if the input is staircase. Can introduce phase lag.
+      MPZ: Good for preserving specific pole/zero locations and DC gain. Often used when the locations of
+      dominant poles/zeros are critical.
+
+MATLAB function: c2d(Gc, T, 'matched') or c2d(Gc, T, 'mpz').
+Python function: control.TransferFunction(num, den).sample(T, 'matched').
+                                                                                                            27
+Example: Discretising a Continuous Controller
+Continuous-Time System (Mass-Spring-Damper):          Continuous-Time Lead Controller Gc (s):
+                                                                                           ​
+
+
+
+
+  State-space model:                                                      s+a       s+2
+                                                               Gc (s) = K     = 2.8
+                                                                          s+b       s+4
+                                                                   ​                ​               ​
+
+
+
+
+            0              1            0
+     ẋ = [                   ] x(t) + [ ] u(t)
+            −1             −2           1             Pre-designed controller for the continuous system.
+                  ​           ​          ​
+
+
+
+
+      ​                                           ​
+
+
+
+
+  y(t) = [1   ​       0] x(t)
+                       ​
+
+
+
+
+                                                      Task: Find the discrete-time controller Gd (z)
+                                                                                                ​
+
+
+
+
+                                                                                                           28
+  Task: Find the equivalent discrete-time controller Gd (z) using:
+                                                       ​
+
+
+
+
+   1. Tustin (Bilinear) Transform
+   2. Zero-Order Hold (ZOH) Equivalence
+   3. Matched Pole-Zero (MPZ) Method
+  We will consider two sampling times:
+     Part A: T = 1.0 second
+     Part B: T = 0.1 second
+
+And compare their performance when controlling the continuous plant.
+
+
+
+
+                                                                       29
+Example Part A: Tustin Method (T=1.0s)
+ Continuous Lead Controller: Gc (s) = 2.8 s+2
+                                     ​
+
+
+
+
+                                          s+4
+                                                     ​
+
+
+
+
+ Sampling Time: T = 1.0 second.
+                                                                 2(z−1)
+ Tustin Transformation Rule: Substitute s ← T2 z−1
+                                               z+1
+                                                 ​ =         ​
+
+
+
+
+                                                                  z+1 (since
+                                                                      ​      T = 1) into Gc (s).
+                                                                                            ​
+
+
+
+
+                 2(z−1)
+  Gd (z) = 2.8 ( 2(z−1)
+                  z+1 + 2
+                          )
+                         ​
+
+
+
+
+     ​                           ​
+
+
+
+
+                  z+1 + 4
+                         ​
+
+
+
+
+                     2(z − 1) + 2(z + 1)
+             = 2.8 (                     ) (Multiply num/den by (z + 1))
+                     2(z − 1) + 4(z + 1)
+                                             ​
+
+
+
+
+         ​                                                                                      ​
+
+
+
+
+                     2z − 2 + 2z + 2
+             = 2.8 (                 )
+                     2z − 2 + 4z + 4
+                                         ​
+
+
+
+
+                       4z               2z       5.6z      1.8667z
+             = 2.8 (        ) = 2.8 (        )=        =
+                     6z + 2           3z + 1    3z + 1   z + 0.3333
+                             ​                           ​                ​             ​
+
+
+
+
+                                                                                                    30
+MATLAB Implementation
+ 1   % MATLAB Code Snippet                 1.867 z
+ 2   K_c = 2.8;                           ----------
+ 3   Gc_s = tf(K_c*[1 2], [1 4]);         z + 0.3333
+ 4   T = 1.0;
+ 5   Gd_tustin = c2d(Gc_s, T, 'tustin')
+
+
+
+
+                                                       Stable
+                                                       Poor performance
+31
+Example Part A: ZOH Method (T=1.0s)
+ Continuous Lead Controller: Gc (s) = 2.8 s+2
+                                          s+4
+                                                        ​                       ​
+
+
+
+
+ Sampling Time: T = 1.0 second.
+
+ ZOH Transformation Rule: Gd (z) = (1 − z −1 )Z { cs                                                }
+                                                                                        G (s)
+                                                                                          ​
+
+
+
+
+                                                    ​                                           ​
+
+
+
+
+             Gc (s)
+ Step 1: Find s
+                ​
+
+
+
+
+                          ​
+
+
+
+
+                              Gc (s)        s+2
+                                     = 2.8
+                                ​
+
+
+
+
+                                s          s(s + 4)
+                                            ​                           ​
+
+
+
+
+ Using partial fraction expansion:
+
+            s+2      A   B    0.5    0.5
+                    = +     =     +
+           s(s + 4)  s  s+4    s    s+4
+                      ​                 ​                   ​       ​               ​
+
+
+
+
+    Gc (s)
+ So, s = 2.8 ( 0.5 + 0.5
+                         ) = 1.4
+                                 + 1.4
+                                   s+4 .
+       ​
+
+
+
+
+                s    s+4      s
+           ​                        ​           ​               ​           ​
+
+
+
+
+                                                                                                        32
+Step 2: Find Z { cs                            }
+                               G (s)
+                                   ​
+
+
+
+
+                                           ​
+
+
+
+
+   Z { 1.4
+        s
+           }
+           ​ = 1.4  z
+                   z−1
+                                                   ​
+
+
+
+
+       1.4
+   Z { s+4 } = 1.4 z−ez−4T = 1.4 z−ez −4 (since T = 1)
+               ​                                       ​                   ​
+
+
+
+
+   So, Z { cs                  } = 1.4 ( z−1
+                   G (s)
+                     ​
+
+
+
+
+                           ​
+                                          z
+                                             + z−ez −4 ).      ​               ​
+
+
+
+
+Step 3: Calculate Gd (z)               ​
+
+
+
+
+         z−1
+                ⋅ 1.4 (                  )
+                          z         z
+Gd (z) =                      +
+           z            z−1 z−e       −4
+   ​                           ​                                       ​           ​
+
+
+
+
+                     z−1               z − e−4 + z − 1
+       = 1.4 (1 +         −4
+                             ) = 1.4 (          −4
+                                                       )
+                    z−e                    z−e
+       ​                                                                                       ​
+
+                                                           ​                               ​
+
+
+
+
+             2z − (1 + e−4 )    2.8z − 1.4256
+       = 1.4           −4
+                              =
+                 z−e              z − 0.0183
+                                                                   ​                   ​
+
+
+
+
+                                                                                                   33
+Marginally stable
+Oscillatory behaviour
+
+
+
+
+                        34
+Example Part A: MPZ Method (T=1.0s)
+  Continuous Lead Controller: Gc (s) = 2.8 s+2
+                                      ​
+
+
+
+
+                                           s+4
+                                                           ​
+
+
+
+
+  Sampling Time: T = 1.0 second.
+
+1. Map Poles and Zeros:
+     Zero of Gc (s): sz = −2 ⟹ zz = e−2T = e−2 ≈ 0.1353.
+                   ​          ​                    ​
+
+
+
+
+     Pole of Gc (s): sp = −4 ⟹ zp = e−4T = e−4 ≈ 0.0183.
+               ​          ​                    ​
+
+
+
+
+                                              −2
+     Basic structure: Gd (z) = Kd′ z−e
+                                  ​
+
+
+
+
+                                   z−e−4
+                                         .​            ​
+
+
+
+
+2. Adjust Numerator Order:
+     The numerator and denominator are already of the same order (both first order). No additional zeros at
+     z = −1 are needed in this case.
+
+
+
+                                                                                                              35
+3. Match DC Gain:
+                                                s+2                 2
+     DC gain of Gc (s): lims→0 2.8 s+4 = 2.8 4 = 1.4.
+                        ​               ​               ​               ​
+
+
+
+
+                                ′ z−e−2    ′ 1−e−2
+     DC gain of Gd (z): limz→1 Kd z−e−4 = Kd 1−e−4 .
+                            ​               ​   ​               ​           ​       ​
+
+
+
+
+                ′ 1−e−2
+     Equating: Kd 1−e−4 = 1.4.
+                    ​               ​
+
+
+
+
+                1−e−4
+     Kd = 1.4 1−e−2 = 1.4 1−0.018316
+        ′
+         ​
+
+
+
+
+                           1−0.135335 ≈ 1.5895.
+                                ​                           ​
+
+
+
+
+                         z−0.1353    1.5895z−0.2151
+     So, Gd (z) = 1.5895 z−0.0183 =
+             ​
+
+
+
+
+                                        z−0.0183    .
+                                                    ​                           ​
+
+
+
+
+                                                                                        36
+Stable
+Poor performance
+
+
+
+
+                   37
+Comparison T=1.0s and T=0.1s
+
+
+
+
+                               Thank you.
+
+
+
+
+                                            38
+

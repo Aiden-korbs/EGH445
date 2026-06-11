@@ -1,0 +1,772 @@
+EGH445 - Modern Control
+
+
+
+           State Estimation
+           Observers and Output Feedback
+
+                                                    Dr Guilherme Froes Silva
+  Consultation: GP-S1111
+                                 School of Electrical Engineering & Robotics
+Email: g.froessilva@qut.edu.au        Queensland University of Technology 1
+Overview
+The need for state estimation and observability.
+Discrete-Time Luenberger Observer.
+Observer Design via Pole Placement.
+Output Feedback Control: Combining Controller and Observer.
+The Separation and Certainty Equivalence principles.
+Observer-based control with reference tracking.
+Handling disturbances with observers (Integral Action revisited).
+Optimum Observer Design (Linear Quadratic Estimator – The Kalman Filter).
+                                                                            2
+The Need for State Estimation
+So far, we’ve designed controllers assuming full state availability:
+
+  Pole Placement: u(kT ) = −Kx(kT ).
+  LQR: u(kT ) = −Kx(kT ).
+  Integral Action: u(kT ) = −Kx x(kT ) − Kq q(kT ).
+                                     ​               ​
+
+
+
+
+State Availability Problem:
+We often cannot measure all states directly and only have access to outputs:
+
+                      y(kT ) = Cx(kT ) + Du(kT )
+                                                                               3
+State Availability Problem
+    Important
+
+ How can we implement state-feedback, u(kT ) = −Kx(kT ), when x(kT ) is not directly measured?
+
+Can we calculate the state from the output?
+Given the output equation for a discrete-time system:
+
+                          y(kT ) = Cx(kT ) + Du(kT )
+
+Assuming D = 0 for simplicity, could we simply invert C ?
+
+                                             ?     −1
+                                 ^(kT ) = C
+                                 x                      y(kT )
+                                                                                                 4
+Can we calculate the state from the output?
+This is not possible in general!
+As the matrix C ∈ Rp×n is often not square.
+Consider a system with two states (n = 2) and one output (p = 1):
+
+              x1 (t)      0    1     x1 (t)      0
+            [        ]=[          ][        ] + [ ] u(t)
+                ​                                           ​
+
+
+
+
+              x2 (t)     −0.1 −0.2 x2 (t)        1
+                    ​   ​               ​       ​               ​   ​
+
+
+
+
+                ​                                           ​
+
+
+
+
+             x(t)∈Rn        ​                                           ​
+
+
+
+
+                                 x1 (t)
+               y(t) = [1 0]p×n [        ]
+                                                    ​
+
+
+
+
+                                 x2 (t)
+                        ​       ​   ​       ​           ​
+
+
+
+
+                                                    ​
+
+
+
+
+              y(t)∈Rp
+                                                                            5
+Can we calculate the state from the input?
+That is, can we simulate the system and use the states?
+Consider the discrete-time system:
+
+   x(kT + T ) = Gx(kT ) + Hu(kT )
+Let’s build a “copy” of the system to estimate
+the state x^(kT ):
+
+   ^(kT + T ) = Gx
+   x             ^(kT ) + Hu(kT )
+
+
+This is an open-loop observer or predictor.
+
+                                                          6
+Open-loop estimation error
+Define the estimation error e(kT ) = x(kT ) − x
+                                              ^(kT ).
+Now, let’s find the dynamics of the estimation error:
+
+                   e(kT + T ) = x(kT + T ) − x
+                                             ^(kT + T )
+                                     = (Gx(kT ) + Hu(kT )) − (Gx
+                                                               ^(kT ) + Hu(kT ))
+                                     = G (x(kT ) − x
+                                                   ^(kT ))
+                                 ​                                                            ​
+
+
+
+
+                                     = Ge(kT )
+
+Problem: The error dynamics are given by the open-loop system matrix G.
+
+  If G has eigenvalues outside the unit circle (unstable system), the estimation error e(kT ) will diverge,
+                                     ^(0).
+  regardless of the initial estimate x
+  Even if G is stable, the error might converge too slowly for effective control.
+
+
+                                                                                                              7
+The Luenberger Observer
+   Idea
+
+Use the measured output y(kT ) to correct the state estimate x
+                                                             ^(kT ).
+
+
+
+
+                                                                       8
+Discrete-Time Luenberger Observer
+Consider the system:
+
+             x(kT + T ) = Gx(kT ) + Hu(kT )
+                   y(kT ) = Cx(kT )
+                          ​                           ​
+
+
+
+
+(Assuming D = 0 for simplicity, can be added back later).
+Luenberger Observer:
+
+^(kT + T ) = Gx
+x             ^(kT ) + Hu(kT ) + L(y(kT ) − y^(kT ))        ​
+
+
+
+
+  ^(kT ) is the state estimate at time kT .
+  x                                                             y(kT ) is the actual measured output.
+  L is the observer gain matrix (to be designed).               y^(kT ) = C x
+                                                                 ​          ^(kT ) is the estimated output.
+                                                                                                              9
+Observer Error Dynamics:
+The observer equation is:
+
+                         ^(kT + T ) = Gx
+                         x             ^(kT ) + Hu(kT ) + L(Cx(kT ) − C x
+                                                                        ^(kT ))
+                         ^(kT + T ) = (G − LC)x
+                                              ^(kT ) + Hu(kT ) + LCx(kT )
+                                           ​                                                                                ​
+
+
+
+
+                         x
+
+Now, let’s find the dynamics of the estimation error e(kT ) = x(kT ) − x
+                                                                       ^(kT ):
+
+       e(kT + T ) = x(kT + T ) − x
+                                 ^(kT + T )
+                             = (Gx(kT ) + Hu(kT )) − ((G − LC)x
+                                                              ^(kT ) + Hu(kT ) + LCx(kT ))
+                             = G(x(kT ) − x
+                                          ^(kT )) − LC(x(kT ) − x
+                                                                ^(kT ))
+                         ​                                                                                                                    ​
+
+
+
+
+                             = (G − LC)e(kT )
+
+    Important
+
+ The observer error dynamics are governed by the matrix (G − LC). We want to choose the observer gain L such that the error e(kT ) converges to zero
+ quickly, i.e., the eigenvalues of (G − LC) are stable (magnitude less than 1) and have desired dynamics.
+
+
+                                                                                                                                                       10
+Observability
+   Question
+
+Can we always find an observer gain L to place the eigenvalues of (G − LC) arbitrarily?
+
+
+
+
+                                                                                          11
+Revisiting Observability
+   Analogy
+
+For state feedback u = −Kx, we could arbitrarily place the eigenvalues of (G − HK) if and only if the
+system (G, H) was controllable.
+
+For observer design, the ability to place the eigenvalues of (G − LC) depends on the system (G, C)
+being observable.
+
+   Observability
+
+A discrete-time system, x(kT + T ) = Gx(kT ) + Hu(kT ),                  y(kT ) = Cx(kT ), is completely
+observable if, for any initial time k0 T , the initial state x(k0 T ) can be uniquely determined from the
+                                    ​                         ​
+
+
+
+
+knowledge of the input sequence u(kT ) and the output sequence y(kT ) for a finite number of steps.
+
+
+
+                                                                                                            12
+Determining Observability
+    Theorem
+
+ The pair (G, C) is completely observable if and only if the observability matrix O has rank n, where n is the
+ dimension of the state vector x.
+
+How to check:
+                                                    2            n−1 ⊺
+1. Construct the matrix O = [C         CG CG … CG                     ] .
+                                                                      ​
+
+
+
+
+2. Calculate its rank
+     numpy.linalg.matrix_rank(ObsvMatrix) (Python)
+     rank(ObsvMatrix) (MATLAB).
+
+3. If O is square, it is full rank if and only if det(O) =
+                                                          0.
+4. If rank(O) < n, the system is not completely observable.
+                                                                                                                 13
+Example: Observability Check
+Consider a discrete-time model for a vehicle, with m = 1, b = 0.5.
+Assume a sampling time T = 0.1.
+Continuous:
+
+                         0          1      0            1              0       0
+                     A=[               ]=[                  ],    B=[     ] = [ ].
+                         0        −b/m     0           −0.5           1/m      1
+                              ​           ​        ​          ​               ​       ​
+
+
+
+
+Discretised (using c2d(...) in MATLAB):
+
+                                       1             0                  0.0049
+                            G=[                          ],       H=[          ].
+                                    0.0975        0.9512                0.0975
+                                              ​           ​                       ​
+
+
+
+
+                                                                                          14
+Case 1: Position Measurement
+Let C1 = [1
+       ​           ​       0].
+                            ​
+
+
+
+
+                                                 1.0000                          0
+                                 O1 = [      ]=[                                     ].
+                                         C1       ​
+
+
+
+
+                                        C1 G     1.0000                       0.0975
+                                     ​                ​                   ​           ​
+
+
+
+
+                                              ​
+
+
+
+
+det(O1 ) = 1 × 0.0975 − 0 × 1 = 0.0975 =
+           ​                            0.
+Rank is 2. System is observable when measuring position.
+Case 2: Velocity Measurement
+C2 = [0
+   ​           ​
+                   1]. ​
+
+
+
+
+                                                     0                    1.0000
+                                     O2 = [      ]=[                             ].
+                                             C2               ​
+
+
+
+
+                                            C2 G     0                    0.9512
+                                         ​                        ​   ​           ​
+
+
+
+
+                                                          ​
+
+
+
+
+det(O2 ) = 0 × 0.9512 − 0 × 1 = 0.
+           ​
+
+
+
+
+Rank is 1. System is not observable when measuring velocity.
+
+                                                                                          15
+Observer Design via Pole
+Placement
+   Goal
+
+Choose the observer gain L such that the error dynamics e(kT + T ) = (G − LC)e(kT ) are stable
+and converge quickly.
+
+   Theorem
+
+If the pair (G, C) is completely observable, then we can arbitrarily assign the eigenvalues of (G − LC) by
+choosing the appropriate observer gain L.
+
+
+                                                                                                             16
+Luenberger Observer: Design Steps
+1. Check Observability: Verify that rank(O) = n.
+2. Choose Desired Observer Poles:
+     Select stable pole locations z1 , z2 , … , zn within the unit circle, ∣zi ∣ < 1.
+                                    ​   ​         ​                          ​
+
+
+
+
+     These poles dictate the speed of convergence of the estimation error e(kT ).
+     Typically chosen 5-10 times faster (closer to the origin) than the desired controller poles.
+3. Form Desired Characteristic Polynomial: (z − z1 )(z − z2 ) ⋯ (z − zn ).
+                                                      ​         ​                ​
+
+
+
+
+4. Determine Observer Gain L:
+     Find L such that the characteristic polynomial of (G − LC) matches the desired
+     characteristic polynomial. (place in MATLAB and control.place in Python).
+
+
+                                                                                                    17
+Duality in Design
+State-feedback control problem                                                   Observer design problem
+Find K to place eigenvalues of (G − HK).                                         Find L to place eigenvalues of (G − LC).
+This requires (G, H) to be controllable.                                         This requires (G, C) to be observable.
+
+    Duality Property
+
+ The eigenvalues of a matrix are the same as the eigenvalues of its transpose.   eig(G − LC) = eig((G − LC)⊺ ) = eig(G⊺ − C ⊺ L⊺ )
+
+This means that designing a gain L to achieve desired poles for (G − LC) is dual to designing a gain Kobs to                         ​
+
+
+
+
+                                                                       ⊺
+achieve the same desired poles for (G⊺ − C ⊺ Kobs ).                       ​
+
+
+
+
+    Tip
+
+ Control Design:                                                                 Observer Design:
+ K = place(G, H, p)                                                              L = place(G', C', p)'
+
+
+
+
+                                                                                                                                         18
+Output Feedback Control
+    Idea
+
+ Now we combine the state-feedback controller with the state observer.
+
+ Since we cannot measure x(kT ), we use its estimate x
+                                                     ^(kT ) (provided by the observer) in the control law.
+
+            ^(kT + T ) = (G − LC)x
+  Observer: x                    ^(kT ) + Hu(kT ) + Ly(kT )
+  Control Law: u(kT ) = −K x
+                           ^(kT )
+
+K is the state-feedback gain (designed assuming x(kT ) was available)
+L is the observer gain.
+                                                                                                             19
+Closed-Loop Dynamics
+The state variables are the actual system state x(kT ) and the estimation error e(kT ) = x(kT ) − x
+                                                                                                  ^(kT ).
+x(kT + T ) = Gx(kT ) + Hu(kT )                                    u(kT ) = −K x
+                                                                              ^(kT )
+e(kT + T ) = (G − LC)e(kT )                                                    = −K(x(kT ) − e(kT ))
+                                                                           ​                           ​
+
+
+
+
+Substitute u(kT ) above:                     x(kT + T ) = Gx(kT ) + H(−K(x(kT ) − e(kT )))
+                                                            ​   = Gx(kT ) − HKx(kT ) + HKe(kT )            ​
+
+
+
+
+                                                                = (G − HK)x(kT ) + HKe(kT )
+
+Combining the dynamics for x(kT ) and e(kT ) in matrix form:
+
+                             x(kT + T )     G − HK                       x(kT )
+                           [            ]=[                           ][        ]
+                                                                 HK
+                             e(kT + T )        0                G − LC e(kT )
+                                       ​                ​              ​
+
+
+
+
+                                                                                                               20
+Separation Principle
+                                        x(kT + T )     G − HK                                  x(kT )
+                                      [            ]=[                                      ][        ]
+                                                                                       HK
+                                        e(kT + T )        0                           G − LC e(kT )
+                                                        ​                         ​                 ​
+
+
+
+
+The closed-loop system matrix is block triangular. Therefore, the eigenvalues of the overall closed-loop system
+are the union of:
+
+  The eigenvalues of the state-feedback controller (eigenvalues of G − HK ).
+  The eigenvalues of the observer error dynamics (eigenvalues of G − LC ).
+
+    Certainty Equivalence Principle
+
+ This means we can design the controller gain K and the observer gain L independently. The controller design determines the system response poles, and
+ the observer design determines the error convergence poles.
+
+
+
+
+                                                                                                                                                         21
+Observer Design Considerations
+ Speed: The state estimates should converge quickly so the controller can respond effectively.
+ Noise: Large observer gains can amplify measurements noise, leading to poor performance.
+
+   Design Trade-off
+
+Optimal observer design techniques (like Kalman filters) explicitly address this trade-off. For pole placement,
+choose poles that are fast enough but not excessively so.
+
+
+
+
+                                                                                                                  22
+Example: Observer-based Control
+System: Vehicle from previous example.
+
+                       1.0000           0.0975              0.0049
+                   G=[                         ],       H=[        ],              C = [1       0] .
+                          0             0.9512              0.0975
+                                    ​          ​                               ​            ​    ​
+
+
+
+
+1. Controller Design (Pole Placement), desired controller poles at {0.8, 0.7}:
+
+K = place(G, H, [0.8, 0.7]) → K = [6.1512           ​        4.3159]
+                                                                   ​
+
+
+
+
+2. Observer Design (Pole Placement), desired observer poles (faster than controller): {0.2, 0.3}.
+                                                                           ⊺
+L = place(G', C', [0.2, 0.3])' → L = [1.4418             ​     4.7007] ​
+
+
+
+
+                                                                                                       23
+3. Closed-Loop Simulation:
+
+Implement the observer and controller u(kT ) = −K x
+                                                  ^(kT ). The overall system state includes x and e.
+        G − HK
+Gcl = [                        ],
+                         HK
+                                      x(0) = [1, 0]T .
+           0            G − LC
+   ​                ​           ​
+
+
+
+
+Initial estimate error: e(0) = x(0) − x
+                                      ^(0) = [1, 0]T − [0, 0]T = [1, 0]T (assume observer starts at 0).
+
+
+
+
+                                                                                                          24
+Extensions
+ Observer-Based Control with Reference Tracking
+ Integral Action with Observers
+ Beyond Luenberger Observers: The Kalman Filter
+
+   Tip
+
+You are not expected to know the mechanics/maths of the following techniques.
+
+You are expected to know what they do, why/when they’re useful, and how to use them (e.g. tuning).
+You may consider these ideas to improve your design for the assessment.
+
+                                                                                                     25
+Observer-Based Control with Reference Tracking
+For non-zero setpoint tracking, y(kT ) → r(kT ), we can adapt the controller structure.
+                                                   ^ in the setpoint regulation schemes discussed previously.
+Using the certainty equivalence, we replace x with x
+Using feedforward gain Kr :          ​
+
+
+
+
+                                                  u(kT ) = −K x
+                                                              ^(kT ) + Kr r(kT )               ​
+
+
+
+
+Where Kr is chosen to ensure steady-state output matches r(kT ).
+                ​
+
+
+
+
+    Important
+
+ Finding Kr now requires considering the combined controller-observer dynamics. Often, integral action is preferred for robustness.
+            ​
+
+
+
+
+                                                                                                                                      26
+Integral Action with Observers
+Observers can be used to estimate disturbances, which can then be used to
+effectively implement integral action.
+The idea is to augment the observer with a state that estimates the
+                                            ⊺
+disturbance, z^(kT ) = [x^(kT ), w^ (kT )] .                               ​
+
+
+
+
+z^(kT + T ) = [                       ] z^(kT ) + [ ] u(kT ),
+                G                   I              H
+                0                   1              0
+                                ​        ​                  ​
+
+
+
+
+                  ​                                                    ​
+
+
+
+
+         y^(kT ) = [C
+          ​                 ​       0] z^(kT )
+                                     ​
+
+
+
+
+   Tip
+
+                                  ^(kT ) and dynamic extension (like
+Alternatively, you can simply use x
+before) to achieve integral action.
+
+
+
+                                                                               27
+Beyond Luenberger Observers
+Limitations of Luenberger Observer:
+
+  Assumes a deterministic system model (no noise).
+  The observer gain L is chosen based on desired pole locations for the error dynamics, not based on noise
+  characteristics.
+  In the presence of significant process noise (uncertainties in the system dynamics) or measurement noise
+  (sensor errors), the Luenberger observer’s performance might not be optimal. Large gains (L) needed for fast
+  convergence can amplify measurement noise.
+
+Need for Stochastic Estimation:
+
+  Real-world systems are inevitably affected by noise.
+  We need methods that explicitly account for these uncertainties to achieve better state estimates.
+                                                                                                                 28
+The Kalman Filter (KF)
+An optimal estimator for linear systems subject to Gaussian noise, which explicitly models:
+
+  Process Noise w(kT ): Uncertainty in the system dynamics model. Characterised by covariance Q.
+  Measurement Noise v(kT ): Uncertainty in the sensor measurements. Characterised by covariance R.
+
+
+                                       x(kT + T ) = Gx(kT ) + Hu(kT ) + w(kT )
+                                                y(kT ) = Cx(kT ) + v(kT )
+                                                           ​                                                         ​
+
+
+
+
+   Key Ideas
+
+  Recursive: Uses previous estimate and current measurement.
+  Predictor-Corrector Structure:
+    1. Predict: Project state estimate and error covariance forward in time based on the model (G, H, Q).
+    2. Correct: Update the predicted estimate using the actual measurement y(kT ), weighted by the Kalman Gain (Kk ).     ​
+
+
+
+
+  Optimal Gain: Kk is calculated at each step to minimise the estimated error covariance Pk , considering the relative uncertainties (Q vs R). It optimally
+                    ​                                                                        ​
+
+
+
+
+  balances trusting the model prediction vs. trusting the noisy measurement.
+
+
+                                                                                                                                                              29
+How the Kalman Filter Works: Predict & Correct
+Prediction (Time Update):                     Predict
+
+Uses the system (G, H) and process noise                  ^− (kT ) = Gx
+                                                          x           ^(kT − T ) + Hu(kT − T )                  (Predicted State)
+covariance (Q).                                          P − (kT ) = GP (kT − T )G⊺ + Q                  (Predicted Covariance)
+                                                                      ​                              ​                              ​
+
+
+
+
+              ^(kT ) and error covariance
+Goal: Predict x
+P (kT ) at kT based on previous estimate.
+
+Update (Measurement Update / Correction):     Update
+
+Uses the measurement model (C) and                         Kk = P − (kT )C T (CP − (kT )C T + R)−1
+                                                              ​                                                    (Kalman Gain)
+measurement noise covariance (R).                       ^(kT ) = x
+                                                        x         ^− (kT ) + Kk (y(kT ) − C x
+                                                                  ​
+                                                                               ​            ^(kT )− )    ​
+                                                                                                                  (Updated State)       ​
+
+
+
+
+                                                        P (kT ) = (I − Kk C )P − (kT )                       (Updated Covariance)
+Goal: Correct the predicted state and error
+                                                                          ​
+
+
+
+
+covariance using the actual measurement
+y(kT ).
+
+                         ^(kT ) and covariance P (kT ) become the inputs for the prediction step at the next
+Cycle: The updated state x
+time instant kT + T .
+KF finds the optimal gain based on noise statistics (Q, R), while Luenberger uses pole placement.
+                                                                                                                                            30
+Handling Nonlinearity: Extended Kalman Filter (EKF)
+What if the system dynamics or measurement model are nonlinear?
+
+                                                          x(kT + T ) = f (x(kT ), u(kT )) + w(kT )
+                                                                    y(kT ) = h(x(kT )) + v(kT )
+                                                                                ​                                                          ​
+
+
+
+
+                                                                              ^(kT ) at each time step.
+Approach: Linearise the nonlinear functions f and h around the state estimate x
+
+                                                                       ∂f                                            ∂h
+                                                           Gk =                                         Hk =
+                                                                       ∂x x^(kT ),u(kT )                             ∂x x^(kT )
+                                                                ​           ​       ​          ​             ​           ​   ​     ​
+
+                                                                                                                                       ​
+
+
+
+
+Apply the standard KF equations using these time-varying Jacobians (Gk , Hk ).                           ​       ​
+
+
+
+
+   Tip
+
+  EKF is widely used for nonlinear estimation (e.g., navigation, target tracking).
+  EKF does not guarantee optimality like the linear KF. The linearization introduces approximations.
+  EKF can diverge if nonlinearities are severe or initial estimates are poor.
+  EKF is more computationally intensive due to Jacobian calculations at each step.
+  Other nonlinear filters exist (e.g., Unscented Kalman Filter - UKF, Particle Filter) that avoid direct linearization but are computationally more complex. EKF is often a good starting point
+  for mildly nonlinear systems.
+
+
+
+                                                                                                                                                                                                  31
+
