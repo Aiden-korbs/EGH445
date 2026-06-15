@@ -14,3 +14,8 @@
 [[Week 1 Workshop|Lecture 1 Workshop - System Models]]
 [[Week 2 Workshop |Lecture 2 Workshop - System Response & Stability]]
 [[Week 6 Workshop |Workshop Week 6 - Control Design 1 Review]]
+
+## Exam Resources
+[[EGH445 Exam Resource Sheet|Exam Resource Sheet]]
+
+[Word-compatible version](EGH445%20Exam%20Resource%20Sheet.docx)
