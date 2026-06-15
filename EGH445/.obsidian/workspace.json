@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Presentation.md",
+                "file": "Questions/Multiple Choice Questions.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Presentation"
+              "title": "Multiple Choice Questions"
             }
           }
         ]
@@ -185,8 +185,12 @@
   },
   "active": "539d5fb6b538f51c",
   "lastOpenFiles": [
-    "Lecture 11/Tustin Bilinear Transform.md",
+    "Questions/Multiple Choice Questions.md",
+    "Questions/Multiple Choice Questions.md",
+    "Questions/Study Questions EGH445 Modern Control.md",
     "Presentation.md",
+    "Questions",
+    "Lecture 11/Tustin Bilinear Transform.md",
     "Lecture 11/Kalman Filter Tuning Strategies.md",
     "Lecture 9/006 Optimal Control Fundamentals.md",
     "Lecture 11/Residual Analysis for KF Tuning.md",
@@ -208,9 +212,6 @@
     "Lecture 9/011 DLQR Tuning.md",
     "Lecture 9/010 DLQR Examples.md",
     "Lecture 9/009 DLQR Stability Theorem.md",
-    "Lecture 9/008 DLQR Design Procedure.md",
-    "Lecture 9/007 Discrete Linear Quadratic Regulator DLQR.md",
-    "Lecture 11/State vs Output Feedback.md",
     "Lecture 11/ADD TO UNIT MOC.txt",
     "Lecture 9",
     "Lecture 10",
@@ -220,7 +221,6 @@
     "pdf_text/Lecture 12.txt",
     "pdf_text/Practical Considerations - Lecture 11.txt",
     "pdf/Practical Considerations - Lecture 11.pdf",
-    "pdf/Practical Considerations - Lecture.pdf",
     "Images/Phase_Portraits.png",
     "Images/Isolated_vs_NonIsolated_EP.png",
     "Images/HodgkinHuxley_Circuit.png",
