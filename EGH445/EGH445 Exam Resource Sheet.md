@@ -75,11 +75,11 @@ $$e^{At}=Te^{\Lambda t}T^{-1}$$
 
 ### Stability Types
 
-| Type | Meaning | Continuous-Time LTI Test |
-|---|---|---|
-| BIBO stability | Every bounded input gives bounded output | Transfer-function poles have $\Re(s)<0$ |
-| Internal stability | All states decay to zero for every initial state | All eigenvalues of $A$ have $\Re(\lambda)<0$ |
-| Asymptotic stability | State approaches equilibrium over time | Same as internal stability for LTI autonomous system |
+| Type                 | Meaning                                          | Continuous-Time LTI Test                             |
+| -------------------- | ------------------------------------------------ | ---------------------------------------------------- |
+| BIBO stability       | Every bounded input gives bounded output         | Transfer-function poles have $\Re(s)<0$              |
+| Internal stability   | All states decay to zero for every initial state | All eigenvalues of $A$ have $\Re(\lambda)<0$         |
+| Asymptotic stability | State approaches equilibrium over time           | Same as internal stability for LTI autonomous system |
 
 Internal stability is stronger than BIBO stability. A system can be BIBO stable but internally unstable if unstable modes are hidden by pole-zero cancellation.
 
@@ -146,7 +146,7 @@ $$\delta\dot{x}=A\delta x+B\delta u$$
 
 where:
 
-$$A=\left.\frac{\partial f}{\partial x}\right|_{\bar{x},\bar{u}}$$
+$$A=\left.\frac{\partial f_i}{\partial x_i}\right|_{\bar{x},\bar{u}}$$
 
 $$B=\left.\frac{\partial f}{\partial u}\right|_{\bar{x},\bar{u}}$$
 

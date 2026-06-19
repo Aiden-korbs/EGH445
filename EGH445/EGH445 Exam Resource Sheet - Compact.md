@@ -1,7 +1,3 @@
-# EGH445 Modern Control Exam Resource Sheet - Readable Compact
-
-Designed as a compact exam sheet: short explanations, formulas, and workflows without the long derivations from the full version.
-
 ## 1. State-Space Modelling
 
 **General nonlinear model**
