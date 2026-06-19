@@ -18,6 +18,8 @@
 ## Exam Resources
 [[EGH445 Exam Resource Sheet|Exam Resource Sheet]]
 [[EGH445 Exam Resource Sheet - Compact|Compact Exam Resource Sheet]]
+[[EGH445 Exam Resource Sheet - 2 Page|2 Page Exam Resource Sheet]]
 
 [Word-compatible version](EGH445%20Exam%20Resource%20Sheet.docx)
 [Compact Word-compatible version](EGH445%20Exam%20Resource%20Sheet%20-%20Compact.docx)
+[2 Page Word-compatible version](EGH445%20Exam%20Resource%20Sheet%20-%202%20Page.docx)

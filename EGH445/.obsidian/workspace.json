@@ -8,35 +8,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "84a45218b265f5cc",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "4-Day Exam Study Plan.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "4-Day Exam Study Plan"
-            }
-          },
-          {
             "id": "539d5fb6b538f51c",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Exam Practice/Additional Practice Questions.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Additional Practice Questions"
-            }
-          },
-          {
-            "id": "489a6d28d672391e",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -49,8 +21,7 @@
               "title": "EGH445 Exam Resource Sheet"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -123,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Exam Practice/Additional Practice Questions.md",
+                "file": "State Space Models.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Additional Practice Questions"
+              "title": "Backlinks for State Space Models"
             }
           },
           {
@@ -214,42 +185,42 @@
   },
   "active": "539d5fb6b538f51c",
   "lastOpenFiles": [
-    "4-Day Exam Study Plan.md",
-    "Exam Practice/Additional Practice Questions.md",
+    "EGH445 Exam Resource Sheet - 2 Page.pdf",
+    "~$H445 Exam Resource Sheet - 2 Page.docx",
+    "EGH445 Exam Resource Sheet - 2 Page.docx",
+    "EGH445 Exam Resource Sheet - 2 Page.md",
+    "EGH445 Exam Resource Sheet - Ultra Compact.md",
     "EGH445 Exam Resource Sheet.md",
-    "Lecture 3/Jacobian Matrices in Linearisation.md",
-    "Lecture 3/Nonlinear Systems and Linearisation.md",
-    "Lecture 3/Examples/Example - Single Link Robotic Arm.md",
-    "Lecture 3/Linearisation Methodology.md",
-    "Lecture 3/Examples/Example - Simple Pendulum Equilibrium.md",
-    "Lecture 2/LTI System Stability.md",
-    "Lecture 2/Lyapunov Stability Criteria.md",
-    "Workshops/Week 6/Controllability and Observability Workshop View.md",
-    "Workshops/Week 6/Week 6 Workshop.md",
-    "Workshops/Week 2/Week 2 Workshop - System Response and Stability.md",
-    "Workshops/Week 2/Analytical Solution - Linear Systems.md",
-    "Workshops/Week 2/Asymptotic Stability.md",
-    "Workshops/Week 2/State Transition Matrix.md",
-    "Lecture 3/Types of Equilibrium Points.md",
-    "Lecture 3/Equilibrium Points in Dynamical Systems.md",
-    "Lecture 1/State-Space to Transfer Function Derivation.md",
-    "Lecture 6/Controllability.md",
+    "Exam Practice/Additional Practice Questions.md",
+    "~$H445 Exam Resource Sheet - Compact.docx",
     "EGH445 Exam Resource Sheet - Compact.md",
-    "EGH445 - Modern Control.md",
-    "Exam Practice/EGH445 2026 Main Mid-Sem Exam Solutions.pdf",
-    "Presentation.md",
-    "Good To knows.md",
-    "Workshops/Week 1/6DOF Aircraft Linearised Dynamics.md",
     "Exam Practice/Practice2025.pdf",
-    "Exam Practice/EGH445_EndSem_Main_2025.pdf",
-    "EGH445 Exam Resource Sheet - Compact.docx",
     "Exam Practice/ExampleMidSemExams.pdf",
+    "Exam Practice/EGH445_Mid_Semester_Quiz_2020.pdf",
     "Exam Practice/EGH445_MidSem_Deferred_2026.pdf",
     "Exam Practice/EGH445_MidSem_Deferred_2025.pdf",
-    "Exam Practice/EGH445_Mid_Semester_Quiz_2020.pdf",
-    "EGH445 Exam Resource Sheet.docx",
-    "lu27873146yj5lm.tmp",
+    "Exam Practice/EGH445_EndSem_Main_2025.pdf",
+    "Exam Practice/EGH445 2026 Main Mid-Sem Exam Solutions.pdf",
+    "4-Day Exam Study Plan.md",
+    "EGH445 - Modern Control.md",
+    "Questions/Study Questions EGH445 Modern Control.md",
     "Questions/Multiple Choice Questions.md",
+    "Questions/Multiple Choice Questions.md",
+    "Presentation.md",
+    "Lecture 11/Tustin Bilinear Transform.md",
+    "Lecture 11/Kalman Filter Tuning Strategies.md",
+    "Lecture 9/006 Optimal Control Fundamentals.md",
+    "Lecture 11/Residual Analysis for KF Tuning.md",
+    "Lecture 9/003 Pole Placement: When It Works and When It Fails.md",
+    "Lecture 10/The Need for State Estimation.md",
+    "Lecture 10/State Estimation: Observers and Output Feedback.md",
+    "Lecture 10/Extended Kalman Filter.md",
+    "Lecture 10/How the Kalman Filter Works.md",
+    "Lecture 10/The Kalman Filter.md",
+    "Lecture 10/Integral Action with Observers.md",
+    "Lecture 10/Observer-Based Control with Reference Tracking.md",
+    "Lecture 10/Separation Principle.md",
+    "Lecture 10/Output Feedback Control.md",
     "Images/Phase_Portraits.png",
     "Images/Isolated_vs_NonIsolated_EP.png",
     "Images/HodgkinHuxley_Circuit.png",
